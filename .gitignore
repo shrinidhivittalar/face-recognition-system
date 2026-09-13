@@ -11,3 +11,6 @@ build/
 frontend/node_modules/
 data/raw/
 
+# Assignment brief / planning documents — kept locally, not published
+*.docx
+
