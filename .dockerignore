@@ -1,0 +1,17 @@
+# Keep the build context small — without this, Docker ships ~700MB
+# (.venv, data/raw LFW parquet, node_modules) to the daemon on every build.
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.git/
+.env
+
+data/raw/
+data/*.png
+
+frontend/node_modules/
+frontend/dist/
+
+*.docx
+docs/

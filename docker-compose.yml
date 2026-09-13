@@ -23,6 +23,11 @@ services:
       DATABASE_URL: postgresql+psycopg2://face_reco:face_reco@db:5432/face_reco
     ports:
       - "8000:8000"
+    # Create the schema before serving; without this the API starts against an
+    # empty database and every enroll/identify call fails.
+    command: >-
+      sh -c "python scripts/init_db.py &&
+      uvicorn app.main:app --host 0.0.0.0 --port 8000 --app-dir backend"
     depends_on:
       db:
         condition: service_healthy

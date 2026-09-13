@@ -13,6 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY ml ./ml
 COPY models ./models
 COPY backend/app ./backend/app
+COPY scripts ./scripts
 
 ENV PYTHONPATH=/srv:/srv/backend
 
