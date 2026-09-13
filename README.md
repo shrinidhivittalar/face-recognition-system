@@ -72,17 +72,86 @@ Documented and measured, not swept under the rug:
   (celebrity photography, frontal/well-lit), not on this system's actual enrolled
   users. Re-calibration is recommended before any real deployment.
 
-## Improvements (if given more time)
+## Scope, Limitations & Future Work
 
-- Calibrate the threshold against a captured dataset of the system's actual target
-  users/cameras, not just LFW.
-- Add liveness/anti-spoofing (e.g. blink detection, texture analysis) before claiming
-  any authentication use case.
-- Move the rate limiter to a shared store (Redis) for multi-instance deployments.
-- Add authentication/RBAC in front of the admin identity-management endpoints.
-- Add a pgvector-backed similarity search if the enrolled population grows large enough
-  that per-request full-table cosine similarity becomes a bottleneck.
-- CI (GitHub Actions) running the pytest suite and frontend build on every push.
+This is a small-scale face recognition **identification** system built within the
+assignment's three-day and zero-cost constraints. It is not a production biometric
+authentication product, and the gaps below are stated deliberately rather than
+left implicit.
+
+### Implemented and verified
+
+The core pipeline and the engineering around it are complete and exercised by
+tests and by manual verification against the containerised stack:
+
+- YuNet detection → exactly-one-face policy → SFace embeddings → L2 normalization
+  → cosine similarity → calibrated threshold gate.
+- **Unknown rejection**, including the guarantee that a rejected match never
+  discloses the closest candidate identity.
+- Threshold **empirically calibrated** on held-out LFW pairs, with a reproducible
+  harness (`scripts/run_evaluation.py`) that regenerates the reported figures.
+- PostgreSQL persistence behind a repository interface, with cascade deletion of
+  an identity's embeddings.
+- Server-side input validation and a safe error contract — no stack traces, SQL,
+  or internal paths reach clients.
+- React UI covering enrollment, identification, Known/Unknown results, and error
+  states.
+- Docker packaging, CI (pytest + frontend build) on every push, and a public
+  deployment.
+
+### Current limitations
+
+- **No liveness or presentation-attack detection.** A printed photo, a screen
+  replay, or a mask would be processed as a genuine face. This is the single
+  largest reason the system must not be treated as an authentication mechanism.
+- **The threshold is dataset-calibrated, not deployment-calibrated.** 0.2975 was
+  derived from LFW, which skews toward frontal, well-lit, adult, public-figure
+  photography. Accuracy on a different population, camera, or lighting regime is
+  unmeasured, and the operating point would need re-derivation from
+  representative data before real use.
+- **Evaluation covers verification pairs, not the deployed task.** FAR/FRR are
+  measured pairwise; the system performs 1:N identification against the enrolled
+  set, where false-accept probability grows with population size. No demographic
+  or subgroup breakdown was performed.
+- **No authentication or authorization.** The identity list/delete endpoints are
+  unauthenticated. Acceptable for a local demo; not safe to expose publicly as-is.
+- **Matching is a full scan.** Every identification loads all stored embeddings
+  and compares them in application memory. Correct and fast at demo scale,
+  linearly worse as enrollment grows.
+- **Single-process rate limiting.** The limiter holds state in memory, so it is
+  ineffective across multiple instances.
+- **Observability is logs only.** Structured logs and a `recognition_events`
+  audit trail exist; there are no metrics, tracing, or alerting.
+- **Embedding versioning is recorded but not managed.** Each embedding stores its
+  `model_version`, yet nothing re-embeds or migrates existing records if the model
+  changes, and mixing versions in one comparison would be silently invalid.
+- **Free-tier hosting constraints.** The deployed instance sleeps after inactivity
+  and cold-starts in roughly a minute; it is a single instance with no redundancy.
+
+### Intentionally out of scope
+
+Deliberately excluded to protect the mandatory ML pipeline and the deadline —
+these are what production hardening would require, not unfinished work:
+
+- **Presentation-attack detection** (passive or challenge-response liveness),
+  plus identity proofing at enrollment, before any authentication claim.
+- **Deployment-specific evaluation:** re-calibration on representative captured
+  data, 1:N identification metrics at realistic population sizes, subgroup
+  fairness analysis, and a scheduled re-validation cadence.
+- **Production auth:** authenticated sessions and role-based access control
+  enforced server-side, with audited administrative actions.
+- **Biometric data governance:** documented retention and deletion policy,
+  subject access and erasure workflows, encryption of embeddings at rest, and
+  consent capture appropriate to the jurisdiction.
+- **Operational monitoring:** metrics, distributed tracing, alerting on error and
+  latency budgets, and drift monitoring on score distributions.
+- **Model lifecycle:** versioned model artifacts with a re-embedding and
+  backfill path, refusal to compare across incompatible versions, and
+  shadow-evaluation before promotion.
+- **Scalable matching:** an approximate nearest-neighbour index (for example
+  pgvector or FAISS) once linear scan stops being adequate.
+- **Availability and scale:** multiple instances behind a load balancer, shared
+  rate-limit state, connection pooling tuned for concurrency, and no cold starts.
 
 ## Architecture
 
