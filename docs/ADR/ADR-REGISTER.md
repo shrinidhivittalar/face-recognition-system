@@ -1,0 +1,18 @@
+# Architecture Decision Record Register
+
+| ADR | Area | Decision | Status |
+|---|---|---|---|
+| ADR-001 | Assignment scope | Required ML functionality (enrollment, detection, embeddings, matching, Unknown rejection, evaluation, README) is mandatory; optional product features (web UI, admin, RBAC, rate limiting, CI, deployment) are secondary and must never jeopardize the core pipeline or the 3-day deadline. | Accepted |
+| ADR-002 | ML model | YuNet (`face_detection_yunet_2023mar.onnx`) for detection + SFace (`face_recognition_sface_2021dec.onnx`) for embeddings, via OpenCV's native `FaceDetectorYN`/`FaceRecognizerSF`. Chosen for permissive licensing (MIT/Apache-2.0, see `models/LICENSE_*.txt`), small footprint (~37MB combined), and fit for a 3-day assignment — not claimed as universally best-in-class. Rejected InsightFace/buffalo_l over model-weight licensing ambiguity for a public submission. | Accepted |
+| ADR-003 | Similarity metric | Cosine similarity on L2-normalized embeddings (`ml/matching.py`). | Accepted |
+| ADR-004 | Threshold | Empirically calibrated on LFW genuine/impostor verification pairs via `scripts/run_evaluation.py`. Method: lowest threshold keeping FAR ≤ 1% on the calibration split ("far_ceiling"), frozen at **0.2975**, then validated on a disjoint held-out split (FAR 0.86%, FRR 0.54%, accuracy 99.30%). See `docs/EVALUATION.md`. | Accepted (frozen) |
+| ADR-005 | Face-count policy | Exactly one detected face is required for both enrollment and identification. 0 faces → reject; 2+ faces → reject. The system never silently picks a face from a multi-face image. | Accepted |
+| ADR-006 | Database | PostgreSQL (Neon, free tier). Embeddings stored as raw float32 bytes (`LargeBinary`) rather than a dedicated vector column, since no pgvector dependency is assumed and the enrolled population is expected to be small enough for application-level cosine similarity. Access goes through a repository interface (`app/repositories/identity_repository.py`) so storage is replaceable. | Accepted |
+| ADR-007 | Deployment | Internet-accessible, $0 spend. Neon (Postgres) selected for the database; hosting for the API/frontend selected after measuring actual container size/runtime (SFace's ONNX weights are ~37MB, well within typical free-tier limits). | Accepted; provider for API/frontend selection documented at deploy time |
+| ADR-008 | Multi-sample identity aggregation | An identity's match score is the **max** cosine similarity across all of its stored samples ("best-sample-wins"). Rewards one strong match while tolerating enrollment samples of varying quality, rather than averaging (which would penalize identities with one poor sample) or requiring all samples to agree. | Accepted |
+| ADR-009 | Authentication/RBAC | Not implemented. The `/api/v1/identities` admin routes have no authorization layer — documented explicitly in code and in `docs/SECURITY.md` as a known limitation, not a hidden gap. | Deferred (P1, not implemented) |
+| ADR-010 | Rate limiting | In-memory sliding-window limiter per client IP on `/enroll` and `/identify` (single-process only; would need a shared store like Redis for a multi-instance deployment). | Accepted |
+
+## What we did not treat as a company requirement
+
+React, FastAPI, PostgreSQL, Docker, and the specific UI design are engineering choices, not requirements from the assignment brief. The assignment brief explicitly requires only: enrollment, face detection, face embeddings, similarity-based matching, Unknown rejection, basic evaluation results, README documentation, a 3-day/$0 budget, and a public GitHub repository link.

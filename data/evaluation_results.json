@@ -1,0 +1,176 @@
+{
+  "model": {
+    "detector": "YuNet (face_detection_yunet_2023mar.onnx)",
+    "recognizer": "SFace (face_recognition_sface_2021dec.onnx)",
+    "similarity_metric": "cosine similarity on L2-normalized embeddings"
+  },
+  "dataset": {
+    "source": "LFW verification pairs (logasja/lfw parquet mirror, View 1 protocol)",
+    "train_pairs_total": 1000,
+    "train_pairs_scored": 854,
+    "train_pairs_excluded_face_policy": 146,
+    "test_pairs_total": 2200,
+    "test_pairs_scored": 1860,
+    "test_pairs_excluded_face_policy": 340
+  },
+  "threshold_selection": {
+    "method": "far_ceiling",
+    "target_far": 0.01,
+    "chosen_threshold": 0.29746987846628503,
+    "train_far": 0.00909090909090909,
+    "train_frr": 0.014492753623188406,
+    "train_accuracy": 0.9882903981264637
+  },
+  "held_out_test_performance": {
+    "threshold": 0.29746987846628503,
+    "far": 0.008592910848549946,
+    "frr": 0.005382131324004306,
+    "accuracy": 0.9930107526881721,
+    "genuine_accepted": 924,
+    "genuine_total": 929,
+    "impostor_rejected": 923,
+    "impostor_total": 931
+  },
+  "excluded_pairs_sample": [
+    {
+      "path_0": "Abdullah_Gul_0013.jpg",
+      "path_1": "Abdullah_Gul_0016.jpg",
+      "is_genuine": true,
+      "reason_0": "ok",
+      "reason_1": "multiple_faces"
+    },
+    {
+      "path_0": "Abdullatif_Sener_0001.jpg",
+      "path_1": "Abdullatif_Sener_0002.jpg",
+      "is_genuine": true,
+      "reason_0": "ok",
+      "reason_1": "multiple_faces"
+    },
+    {
+      "path_0": "Al_Pacino_0001.jpg",
+      "path_1": "Al_Pacino_0002.jpg",
+      "is_genuine": true,
+      "reason_0": "ok",
+      "reason_1": "multiple_faces"
+    },
+    {
+      "path_0": "Alex_Penelas_0001.jpg",
+      "path_1": "Alex_Penelas_0002.jpg",
+      "is_genuine": true,
+      "reason_0": "multiple_faces",
+      "reason_1": "ok"
+    },
+    {
+      "path_0": "Amanda_Bynes_0001.jpg",
+      "path_1": "Amanda_Bynes_0002.jpg",
+      "is_genuine": true,
+      "reason_0": "ok",
+      "reason_1": "multiple_faces"
+    },
+    {
+      "path_0": "Ann_Veneman_0008.jpg",
+      "path_1": "Ann_Veneman_0009.jpg",
+      "is_genuine": true,
+      "reason_0": "multiple_faces",
+      "reason_1": "ok"
+    },
+    {
+      "path_0": "Ben_Affleck_0001.jpg",
+      "path_1": "Ben_Affleck_0003.jpg",
+      "is_genuine": true,
+      "reason_0": "ok",
+      "reason_1": "multiple_faces"
+    },
+    {
+      "path_0": "Ben_Affleck_0003.jpg",
+      "path_1": "Ben_Affleck_0006.jpg",
+      "is_genuine": true,
+      "reason_0": "multiple_faces",
+      "reason_1": "ok"
+    },
+    {
+      "path_0": "Carla_Del_Ponte_0002.jpg",
+      "path_1": "Carla_Del_Ponte_0004.jpg",
+      "is_genuine": true,
+      "reason_0": "ok",
+      "reason_1": "multiple_faces"
+    },
+    {
+      "path_0": "Carla_Del_Ponte_0004.jpg",
+      "path_1": "Carla_Del_Ponte_0005.jpg",
+      "is_genuine": true,
+      "reason_0": "multiple_faces",
+      "reason_1": "ok"
+    },
+    {
+      "path_0": "Carlos_Ortega_0001.jpg",
+      "path_1": "Carlos_Ortega_0003.jpg",
+      "is_genuine": true,
+      "reason_0": "ok",
+      "reason_1": "multiple_faces"
+    },
+    {
+      "path_0": "Chita_Rivera_0001.jpg",
+      "path_1": "Chita_Rivera_0002.jpg",
+      "is_genuine": true,
+      "reason_0": "multiple_faces",
+      "reason_1": "ok"
+    },
+    {
+      "path_0": "Christian_Wulff_0001.jpg",
+      "path_1": "Christian_Wulff_0002.jpg",
+      "is_genuine": true,
+      "reason_0": "ok",
+      "reason_1": "multiple_faces"
+    },
+    {
+      "path_0": "Christine_Todd_Whitman_0005.jpg",
+      "path_1": "Christine_Todd_Whitman_0006.jpg",
+      "is_genuine": true,
+      "reason_0": "multiple_faces",
+      "reason_1": "ok"
+    },
+    {
+      "path_0": "Condoleezza_Rice_0002.jpg",
+      "path_1": "Condoleezza_Rice_0005.jpg",
+      "is_genuine": true,
+      "reason_0": "ok",
+      "reason_1": "multiple_faces"
+    },
+    {
+      "path_0": "Dai_Bachtiar_0001.jpg",
+      "path_1": "Dai_Bachtiar_0002.jpg",
+      "is_genuine": true,
+      "reason_0": "ok",
+      "reason_1": "multiple_faces"
+    },
+    {
+      "path_0": "David_Stern_0003.jpg",
+      "path_1": "David_Stern_0004.jpg",
+      "is_genuine": true,
+      "reason_0": "multiple_faces",
+      "reason_1": "ok"
+    },
+    {
+      "path_0": "Denise_Johnson_0001.jpg",
+      "path_1": "Denise_Johnson_0002.jpg",
+      "is_genuine": true,
+      "reason_0": "ok",
+      "reason_1": "multiple_faces"
+    },
+    {
+      "path_0": "Dominique_de_Villepin_0007.jpg",
+      "path_1": "Dominique_de_Villepin_0011.jpg",
+      "is_genuine": true,
+      "reason_0": "multiple_faces",
+      "reason_1": "ok"
+    },
+    {
+      "path_0": "Donald_Rumsfeld_0041.jpg",
+      "path_1": "Donald_Rumsfeld_0048.jpg",
+      "is_genuine": true,
+      "reason_0": "multiple_faces",
+      "reason_1": "ok"
+    }
+  ]
+}
