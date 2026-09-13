@@ -48,10 +48,12 @@ services:
   # ----------------------------------------------------------------------
   # Frontend — React + TypeScript, built by Vite into a static bundle
   # ----------------------------------------------------------------------
+  # Static sites take no `plan` field — they are free by nature, and `plan`
+  # only applies to compute-backed services. Setting it fails validation with
+  # "no such plan free for service type web".
   - name: face-reco-web
     type: web
     runtime: static
-    plan: free
     rootDir: ./frontend
     buildCommand: npm ci && npm run build
     staticPublishPath: ./dist
