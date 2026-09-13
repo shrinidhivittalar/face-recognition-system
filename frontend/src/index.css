@@ -354,6 +354,39 @@ h1 {
   }
 }
 
+.enroll-success {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.add-sample-section {
+  border-top: 1px solid var(--color-border);
+  padding-top: 1.5rem;
+}
+
+.add-sample-section h2 {
+  font-size: 1.05rem;
+  margin: 0 0 0.5rem;
+}
+
+.add-sample-section .hint {
+  text-align: left;
+  margin: 0 0 1.25rem;
+}
+
+.add-sample {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.row-actions {
+  display: flex;
+  gap: 0.25rem;
+  justify-content: flex-end;
+}
+
 .identity-table {
   width: 100%;
   border-collapse: collapse;
