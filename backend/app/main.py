@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from app.api.routes import enroll, health, identify, identities
 from app.core.config import get_settings
 from app.core.logging import configure_logging, get_logger
+from app.services.enrollment_service import DuplicateIdentityError
 from ml.preprocessing import InvalidImageError
 from ml.model_adapter import NoFaceDetectedError, MultipleFacesDetectedError
 
@@ -55,6 +56,22 @@ async def handle_multiple_faces(request: Request, exc: MultipleFacesDetectedErro
     return JSONResponse(
         status_code=422,
         content={"error": "multiple_faces", "message": "Please ensure only one face is visible."},
+    )
+
+
+@app.exception_handler(DuplicateIdentityError)
+async def handle_duplicate_identity(request: Request, exc: DuplicateIdentityError) -> JSONResponse:
+    # Deliberately does not name the existing identity — see
+    # DuplicateIdentityError for why.
+    return JSONResponse(
+        status_code=409,
+        content={
+            "error": "duplicate_identity",
+            "message": (
+                "This face is already enrolled. If you are adding another photo of "
+                "someone already registered, add it to their existing record instead."
+            ),
+        },
     )
 
 

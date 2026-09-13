@@ -139,6 +139,93 @@ def test_list_identities(client):
     assert body[0]["sample_count"] == 1
 
 
+def _enroll(client, name, fixture):
+    return client.post(
+        "/api/v1/enroll",
+        data={"display_name": name},
+        files={"image": (fixture, fixture_bytes(fixture), "image/jpeg")},
+    )
+
+
+def test_duplicate_enrollment_exact_same_image_rejected(client):
+    assert _enroll(client, "Alice", "single_face_a1.jpg").status_code == 200
+
+    resp = _enroll(client, "Bob", "single_face_a1.jpg")
+    assert resp.status_code == 409
+    assert resp.json()["error"] == "duplicate_identity"
+
+
+def test_duplicate_enrollment_different_image_same_person_rejected(client):
+    assert _enroll(client, "Alice", "single_face_a1.jpg").status_code == 200
+
+    resp = _enroll(client, "Alice Again", "single_face_a2.jpg")
+    assert resp.status_code == 409
+    assert resp.json()["error"] == "duplicate_identity"
+
+
+def test_duplicate_response_does_not_disclose_existing_identity(client):
+    enrolled = _enroll(client, "Alice", "single_face_a1.jpg")
+    identity_id = enrolled.json()["identity_id"]
+
+    resp = _enroll(client, "Bob", "single_face_a1.jpg")
+    body = resp.text
+
+    assert "Alice" not in body
+    assert identity_id not in body
+    assert set(resp.json().keys()) == {"error", "message"}
+
+
+def test_duplicate_rejection_creates_no_partial_identity(client):
+    _enroll(client, "Alice", "single_face_a1.jpg")
+    _enroll(client, "Bob", "single_face_a1.jpg")
+
+    identities = client.get("/api/v1/identities").json()
+    assert [i["display_name"] for i in identities] == ["Alice"]
+
+
+def test_genuinely_different_person_still_enrolls(client):
+    assert _enroll(client, "Alice", "single_face_a1.jpg").status_code == 200
+
+    resp = _enroll(client, "Different Person", "single_face_b1.jpg")
+    assert resp.status_code == 200
+    assert resp.json()["display_name"] == "Different Person"
+
+
+def test_adding_sample_to_existing_identity_is_not_blocked_as_duplicate(client):
+    """The duplicate gate must never interfere with the add-sample path."""
+    enrolled = _enroll(client, "Alice", "single_face_a1.jpg")
+    identity_id = enrolled.json()["identity_id"]
+
+    resp = client.post(
+        f"/api/v1/identities/{identity_id}/samples",
+        files={"image": ("a2.jpg", fixture_bytes("single_face_a2.jpg"), "image/jpeg")},
+    )
+    assert resp.status_code == 200
+
+    identities = client.get("/api/v1/identities").json()
+    assert identities[0]["sample_count"] == 2
+
+
+def test_identification_unaffected_by_duplicate_gate(client):
+    """Duplicate detection must not change who gets identified."""
+    enrolled = _enroll(client, "Alice", "single_face_a1.jpg")
+    identity_id = enrolled.json()["identity_id"]
+
+    known = client.post(
+        "/api/v1/identify",
+        files={"image": ("a2.jpg", fixture_bytes("single_face_a2.jpg"), "image/jpeg")},
+    )
+    assert known.json()["outcome"] == "known"
+    assert known.json()["identity_id"] == identity_id
+
+    unknown = client.post(
+        "/api/v1/identify",
+        files={"image": ("b1.jpg", fixture_bytes("single_face_b1.jpg"), "image/jpeg")},
+    )
+    assert unknown.json()["outcome"] == "unknown"
+    assert unknown.json()["identity_id"] is None
+
+
 def test_delete_identity(client):
     enroll_resp = client.post(
         "/api/v1/enroll",

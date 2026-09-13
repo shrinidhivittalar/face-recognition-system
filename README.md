@@ -28,6 +28,23 @@ other frozen decision.
 
 ## Matching Threshold
 
+Two thresholds, calibrated separately because the cost of being wrong differs:
+
+| Decision | Threshold | Optimised for |
+|---|---|---|
+| **Identification** — is this query one of the enrolled people? | **0.2975** | FAR ≤ 1% |
+| **Duplicate enrollment** — is this new person already enrolled? | **0.3426** | Near-zero wrongful blocks |
+
+The duplicate gate is stricter on purpose. A false accept during identification
+mislabels someone; a false accept during enrollment *prevents a legitimate new
+user from enrolling at all*. Reusing 0.2975 would wrongly block 0.859% of new
+enrollments (8 per 931 on held-out data); 0.3426 reduces that to 0.215% (2 per
+931) while still catching 99.25% of genuine duplicates. Derived by
+`scripts/run_duplicate_threshold_experiment.py`; evidence in
+`data/duplicate_threshold_results.json`.
+
+The identification threshold below is unchanged.
+
 **Frozen at 0.2975**, calibrated empirically — never hand-picked. Methodology:
 
 1. Loaded the standard LFW "View 1" verification pairs protocol (1,000 calibration
@@ -125,6 +142,11 @@ tests and by manual verification against the containerised stack:
 - **Embedding versioning is recorded but not managed.** Each embedding stores its
   `model_version`, yet nothing re-embeds or migrates existing records if the model
   changes, and mixing versions in one comparison would be silently invalid.
+- **Duplicate detection can wrongly block a legitimate new user.** At the 0.3426
+  gate, roughly 0.2% of genuinely distinct people resemble an enrolled person
+  closely enough to be refused. Because the response deliberately withholds the
+  matching identity, an affected user cannot self-diagnose or resolve it — an
+  operator would have to intervene, and no such workflow exists.
 - **Free-tier hosting constraints.** The deployed instance sleeps after inactivity
   and cold-starts in roughly a minute; it is a single instance with no redundancy.
 
@@ -171,7 +193,7 @@ Details: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) ·
 | Endpoint | Purpose |
 |---|---|
 | `GET /health` | Health/status check (API + DB + model version) |
-| `POST /api/v1/enroll` | Multipart `display_name` + `image`; creates identity + first embedding |
+| `POST /api/v1/enroll` | Multipart `display_name` + `image`; creates identity + first embedding. Returns `409 duplicate_identity` if the face is already enrolled, without naming the existing identity |
 | `POST /api/v1/identities/{id}/samples` | Add another sample/embedding to an existing identity |
 | `POST /api/v1/identify` | Multipart `image`; returns `{"outcome": "known", identity_id, display_name}` or `{"outcome": "unknown"}` — never leaks a candidate identity on Unknown |
 | `GET /api/v1/identities` | List enrolled identities (no auth — demo/admin only, see Security) |

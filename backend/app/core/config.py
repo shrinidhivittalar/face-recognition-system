@@ -22,6 +22,16 @@ class Settings(BaseSettings):
     # FRR 0.54%, accuracy 99.30%.
     similarity_threshold: float = 0.2975
 
+    # Separate, stricter gate for "is this new enrollment already an enrolled
+    # person?". Deliberately NOT the identification threshold: there, a false
+    # accept mislabels someone; here it BLOCKS a legitimate new user from
+    # enrolling at all. Calibrated by scripts/run_duplicate_threshold_experiment.py
+    # as the lowest threshold with zero false blocks on the calibration split.
+    # Held-out: 0.215% wrongly blocked (2/931) vs 0.859% (8/931) at 0.2975,
+    # while still catching 99.25% of true duplicates.
+    # Evidence: data/duplicate_threshold_results.json
+    duplicate_threshold: float = 0.3426
+
     cors_allowed_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
 
     rate_limit_identify_per_minute: int = 20

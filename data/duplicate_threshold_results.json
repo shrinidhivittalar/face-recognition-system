@@ -1,0 +1,31 @@
+{
+  "purpose": "duplicate-enrollment detection threshold",
+  "identification_threshold_unchanged": 0.2975,
+  "selection": {
+    "policy": "lowest threshold with FAR <= target on the calibration split",
+    "target_far": 0.0,
+    "chosen_threshold": 0.34258261819680524,
+    "calibration": {
+      "wrongly_blocked_rate": 0.0,
+      "duplicate_catch_rate": 0.9806763285024155,
+      "impostor_pairs": 440,
+      "genuine_pairs": 414
+    }
+  },
+  "held_out_validation": {
+    "threshold": 0.34258261819680524,
+    "wrongly_blocked_rate": 0.0021482277121374865,
+    "wrongly_blocked_count": 2,
+    "impostor_pairs": 931,
+    "duplicate_catch_rate": 0.9924650161463939,
+    "duplicates_caught": 922,
+    "genuine_pairs": 929
+  },
+  "why_not_reuse_identification_threshold": {
+    "threshold": 0.2975,
+    "calibration_wrongly_blocked_rate": 0.00909090909090909,
+    "held_out_wrongly_blocked_rate": 0.008592910848549946,
+    "held_out_wrongly_blocked_count": 8,
+    "held_out_duplicate_catch_rate": 0.9946178686759957
+  }
+}

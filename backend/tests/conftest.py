@@ -22,6 +22,22 @@ def _create_schema():
 
 
 @pytest.fixture(autouse=True)
+def _reset_rate_limiters():
+    """Clear per-IP rate-limit state between tests.
+
+    The limiters are module-level and every test shares one client address, so
+    without this the suite trips the 10-enrollments-per-minute limit partway
+    through and later tests fail with 429 rather than what they assert.
+    """
+    from app.api.routes import enroll as enroll_routes
+    from app.api.routes import identify as identify_routes
+
+    enroll_routes._limiter._hits.clear()
+    identify_routes._limiter._hits.clear()
+    yield
+
+
+@pytest.fixture(autouse=True)
 def _clean_tables():
     """Truncate all tables between tests so each test starts from an empty DB."""
     engine = get_engine()
