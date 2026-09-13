@@ -1,5 +1,12 @@
-opencv-python==4.10.0.84
-onnxruntime==1.19.2
+# Runtime dependencies — what the serving container actually needs.
+# Evaluation/test tooling lives in requirements-dev.txt and is deliberately
+# kept out of the production image.
+#
+# Note: the YuNet/SFace ONNX models are loaded by OpenCV's own DNN module
+# (cv2.FaceDetectorYN / cv2.FaceRecognizerSF), so onnxruntime is not required.
+# opencv-python-headless is used because a server never needs OpenCV's GUI code.
+
+opencv-python-headless==4.10.0.84
 numpy==1.26.4
 fastapi==0.115.0
 uvicorn[standard]==0.30.6
@@ -9,7 +16,3 @@ pydantic==2.9.2
 pydantic-settings==2.5.2
 python-multipart==0.0.9
 python-dotenv==1.0.1
-pytest==8.3.3
-httpx==0.27.2
-matplotlib==3.9.2
-pyarrow==17.0.0

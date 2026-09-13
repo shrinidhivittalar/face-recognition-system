@@ -1,0 +1,11 @@
+# Development / evaluation dependencies.
+# Installs everything in requirements.txt, plus the tooling needed to run the
+# test suite and the threshold-calibration harness (scripts/run_evaluation.py).
+# These are intentionally NOT installed in the serving container.
+
+-r requirements.txt
+
+pytest==8.3.3
+httpx==0.27.2
+pyarrow==17.0.0
+matplotlib==3.9.2

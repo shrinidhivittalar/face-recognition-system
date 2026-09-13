@@ -1,7 +1,8 @@
 FROM python:3.11-slim
 
+# opencv-python-headless still links libglib, but not libGL — the GUI stack a
+# server never uses.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgl1 \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 

@@ -25,7 +25,7 @@
 - Impostor pairs rejected: 923 / 931
 
 ## Known Failure Cases
-- 486 pairs across both splits contained images where the exactly-one-face policy rejected the image before a similarity score could even be computed. Manual inspection of a sample of exclusions showed the majority were `multiple_faces` rejections, not `no_face` rejections — LFW images are not all strictly single-subject; several contain a bystander or partially visible second person in frame, which YuNet correctly detects and the exactly-one-face policy correctly refuses to silently resolve. These are legitimate pipeline rejections, not matching errors, and are excluded from FAR/FRR.
+- 486 pairs across both splits contained images where the exactly-one-face policy rejected the image (no face detected, or multiple faces detected) before a similarity score could even be computed. These are legitimate pipeline rejections, not matching errors, and are excluded from FAR/FRR.
 - Remaining FAR (0.86%) and FRR (0.54%) on the held-out test split represent look-alike/false-acceptance and lighting/pose-driven false-rejection cases respectively.
 
 ## Limitations

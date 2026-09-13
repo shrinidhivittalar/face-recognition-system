@@ -47,6 +47,7 @@ Score distribution plot: `data/score_distribution.png`.
 
 Reproduce it yourself:
 ```bash
+pip install -r requirements-dev.txt  # evaluation needs pyarrow + matplotlib
 python scripts/download_dataset.py   # fetches LFW pairs (~84MB, not committed)
 python scripts/run_evaluation.py     # re-runs calibration + evaluation end-to-end
 ```
@@ -116,8 +117,10 @@ so deleting the project folder removes all dependencies.
 
 ```bash
 python -m venv .venv
-./.venv/Scripts/pip install -r requirements.txt      # Windows
-# source .venv/bin/pip install -r requirements.txt   # macOS/Linux
+# requirements-dev.txt = runtime deps + test/evaluation tooling.
+# Use requirements.txt alone if you only want to serve the API.
+./.venv/Scripts/pip install -r requirements-dev.txt      # Windows
+# source .venv/bin/pip install -r requirements-dev.txt   # macOS/Linux
 
 cp .env.example .env
 # Edit .env: paste a PostgreSQL connection string (a free Neon.tech project works well)
