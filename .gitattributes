@@ -1,0 +1,5 @@
+# Shell scripts must keep LF endings. Committed from Windows, they would
+# otherwise land as CRLF and fail on Linux with "bad interpreter" or a
+# silently mangled final argument.
+*.sh text eol=lf
+Dockerfile text eol=lf

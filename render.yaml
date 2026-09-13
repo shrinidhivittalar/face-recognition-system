@@ -27,13 +27,13 @@ services:
     # $PORT. Overriding here honors it without modifying the frozen Dockerfile.
     # init_db is idempotent (SQLAlchemy create_all skips existing tables).
     #
-    # Do NOT wrap this in `sh -c "..."`. Render already runs dockerCommand
-    # through a shell, so wrapping double-wraps it and the inner shell treats
-    # the whole string as one command name:
+    # Delegated to a script so this value contains no shell metacharacters.
+    # Both `sh -c "a && b"` and a bare `a && b` failed here with:
     #   sh: 1: python scripts/init_db.py && uvicorn ...: not found
-    # followed by "Port scan timeout reached". The bare command is correct;
-    # `&&` and `$PORT` are handled by Render's own shell.
-    dockerCommand: python scripts/init_db.py && uvicorn app.main:app --host 0.0.0.0 --port $PORT --app-dir backend
+    #   Exited with status 127
+    # because the command gets re-wrapped and `&&` is not parsed. start.sh
+    # reads $PORT itself and execs uvicorn.
+    dockerCommand: sh scripts/start.sh
     healthCheckPath: /health
     envVars:
       # Neon connection string — paste in the dashboard, never committed.
