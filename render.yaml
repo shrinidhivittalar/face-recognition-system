@@ -1,0 +1,69 @@
+# Render Blueprint — provisions the full public stack in one step.
+#
+#   React static site  ->  FastAPI Docker web service  ->  Neon PostgreSQL
+#
+# Both services are on Render's Free plan (512 MB RAM, 0.1 CPU, sleeps after
+# 15 minutes idle, ~1 minute cold start).
+#
+# Region: ohio. The Neon database lives in AWS us-east-2, so the backend is
+# co-located with it — identification scans every enrolled embedding, and a
+# cross-continent round trip per request would be pure added latency.
+#
+# Values marked `sync: false` are prompted for in the Render dashboard during
+# Blueprint creation and are never stored in this repository.
+
+services:
+  # ----------------------------------------------------------------------
+  # Backend — FastAPI + YuNet/SFace, built from backend/Dockerfile
+  # ----------------------------------------------------------------------
+  - name: face-reco-api
+    type: web
+    runtime: docker
+    plan: free
+    region: ohio
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    # The image's default CMD hardcodes port 8000; Render assigns a port via
+    # $PORT. Overriding here honors it without modifying the frozen Dockerfile.
+    # init_db is idempotent (SQLAlchemy create_all skips existing tables).
+    dockerCommand: sh -c "python scripts/init_db.py && uvicorn app.main:app --host 0.0.0.0 --port $PORT --app-dir backend"
+    healthCheckPath: /health
+    envVars:
+      # Neon connection string — paste in the dashboard, never committed.
+      - key: DATABASE_URL
+        sync: false
+      # Public URL of the static site below, set once Render assigns it.
+      #
+      # MUST be a JSON array, quotes included:
+      #     ["https://face-reco-web.onrender.com"]
+      # A bare URL (https://face-reco-web.onrender.com) fails pydantic
+      # validation and the service will crash-loop on boot. Verified.
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: SIMILARITY_THRESHOLD
+        value: "0.2975"
+      - key: LOG_LEVEL
+        value: INFO
+
+  # ----------------------------------------------------------------------
+  # Frontend — React + TypeScript, built by Vite into a static bundle
+  # ----------------------------------------------------------------------
+  - name: face-reco-web
+    type: web
+    runtime: static
+    plan: free
+    rootDir: ./frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      # Vite inlines this at BUILD time, so changing it triggers a rebuild.
+      # Set to the API service's public URL, e.g.
+      #   https://face-reco-api.onrender.com
+      - key: VITE_API_BASE_URL
+        sync: false
+    routes:
+      # React Router uses client-side routing: without this rewrite, loading
+      # /enroll or /identify directly (or refreshing) would 404.
+      - type: rewrite
+        source: /*
+        destination: /index.html
